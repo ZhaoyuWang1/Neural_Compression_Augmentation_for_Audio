@@ -504,11 +504,11 @@ def convert_to_wav(mp3_path, output_directory):
     return output_path_wav
 
 def delete_file(file_path):
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        print("---DELETED---")
-    else:
-	print("---NOT FOUND---")
+	if os.path.exists(file_path):
+		os.remove(file_path)
+		print("---DELETED---")
+	else:
+		print("CANNOT FIND")
     
 # Trim or pad
 def trim_pad(cfg, lms):
