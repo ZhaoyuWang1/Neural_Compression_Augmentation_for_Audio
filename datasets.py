@@ -365,7 +365,7 @@ class AudioSet(Dataset):
 		self.cfg = cfg 
 		self.transform = transform
 		self.norm_stats = norm_stats
-		self.base_dir = "data/audioset/"
+		self.base_dir = "/rds/general/user/zw1222/home/debug/SSL_audio/data/audioset"
 
 		# load in csv file
 		df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
@@ -483,6 +483,7 @@ def extract_compressed_wav(audio_fpath, tmp_path, bitrate='32k', sr=16000):
 	wav_path = convert_to_wav(mp3_path, tmp_path)
 	delete_file(mp3_path)
 	wav, org_sr = librosa.load(wav_path, sr=sr)
+	print(f"wave is : {wav}")
 	wav = torch.tensor(wav)
 	delete_file(wav_path)
 	return wav, org_sr
@@ -505,10 +506,10 @@ def convert_to_wav(mp3_path, output_directory):
 def delete_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
-        #print(f"{file_path} deleted successfully")
-    #else:
-        #print(f"{file_path} not found")
-
+        print("---DELETED---")
+    else:
+	    print("---NOT FOUND---")
+    
 # Trim or pad
 def trim_pad(cfg, lms):
 	l = lms.shape[-1]
