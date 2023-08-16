@@ -44,8 +44,6 @@ def train_one_epoch(args, epoch, model, predictor, barlow_twins_loss, data_loade
 	total_data_time, total_forward_time, total_backward_time = 0, 0, 0
 	tflag = time.time()
 	for iteration, (images, _) in enumerate(train_bar):
-		#print(f"one batch datashape {len(images)}")
-		#print(f"batch_size {images[0].shape}")
 		data_time = time.time() - tflag
 
 		iteration += len(data_loader) * (epoch - 1)  # global training iteration
@@ -294,7 +292,6 @@ def get_data(args):
 	elif args.dataset == 'audioset':
 		norm_stats = [-0.8294, 4.6230]
 		train_data = datasets.AudioSet(args, transform=transforms.AudioPairTransform(args), norm_stats=norm_stats)
-		#print(f"size of dataset is {train_data}")
 	elif args.dataset == 'audioset+librispeech':
 		norm_stats_audioset = [-0.8294, 4.6230]
 		norm_stats_librispeech = [-3.332, 4.205]
@@ -390,7 +387,7 @@ if __name__ == '__main__':
 		train_loader, memory_loader, test_loader = get_data(args)
 	else:
 		train_loader = get_data(args) #(128, 1, 64, 96)
-	#print(f"len of loader is {len(train_loader)}")
+
 	# model 
 	model = ModelWrapper(args)
 	# multi-crop wrapper handles forward with inputs of different resolutions
