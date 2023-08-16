@@ -9,6 +9,11 @@ wandb login 6985287168c4011de582a1a3c5ac25ed5ef23bd2
 
 cd $PBS_O_WORKDIR
 
-python main_2.py > output.txt
+python main_2.py\
+    --projector_out_dim 1048\
+    --num_workers 4\
+    --lr_schedule\
+    --use_fp16\
+    --mp3_compression
 
 conda deactivate
