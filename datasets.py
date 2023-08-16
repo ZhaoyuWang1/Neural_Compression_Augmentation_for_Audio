@@ -14,6 +14,10 @@ import json
 import os
 
 
+def id():
+	print('testing')
+
+	
 def make_index_dict(label_csv):
 	index_lookup = {}
 	with open(label_csv, 'r') as f:
