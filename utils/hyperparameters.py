@@ -33,7 +33,7 @@ def get_std_parameters():
 	parser = argparse.ArgumentParser(add_help=False)
 	parser.add_argument('--model_type', default='audiontt', type=str, choices=MODELS)
 	parser.add_argument('--dataset', default='audioset', type=str, choices=DATASETS)
-	parser.add_argument('--epochs', default=100, type=int)
+	parser.add_argument('--epochs', default=1, type=int)
 	parser.add_argument('--lr_schedule', action='store_true', default=False)
 	parser.add_argument('--epoch_save_f', default=5, type=int)
 	parser.add_argument('--epoch_eval_f', default=5, type=int)
@@ -95,11 +95,6 @@ def get_std_parameters():
 	parser.add_argument('--lr_weights', type=float, default=None)
 	parser.add_argument('--lr_biases', type=float, default=None)
 	parser.add_argument('--wd', type=float, default=None)
-
-	parser.add_argument('--mp3_compression', action='store_true', default=False)
-	parser.add_argument('--ldm_compression', action='store_true', default=False)
-	parser.add_argument('--ae_compression', action='store_true', default=False)
-	parser.add_argument('--vae_compression', action='store_true', default=False)
 	return parser 
 
 

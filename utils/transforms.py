@@ -10,8 +10,7 @@ class AudioPairTransform(nn.Module):
 				 mixup_ratio=0.2, gauss_noise_ratio=0.2,
 				 global_crop_scale=(0.6, 1.5), local_crop_scale=(0.05, 0.6)):
 		super().__init__()
-		#modified: if using mp3 compression, generate 2 wav first, so no need of multi_transform
-		self.multi_transform = multi_transform if (not args.mp3_compression) and (not args.ldm_compression) else False
+		self.multi_transform = multi_transform
 		self.local_crops_number = args.local_crops_number
 		
 		if train_transform is True:
@@ -32,7 +31,6 @@ class AudioPairTransform(nn.Module):
 				)
 			if args.RLF:
 				global_transforms.append(augmentations.RandomLinearFader())
-			
 			self.global_transform = nn.Sequential(*global_transforms)
 		else:
 			self.global_transform = nn.Identity()
