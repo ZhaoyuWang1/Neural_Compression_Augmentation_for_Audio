@@ -391,8 +391,8 @@ class AudioSet(Dataset):
 			power=2,
 		)
 		# also read in FSD50K csv files (in case of ValueErrors for incorrectly downloaded AS samples)
-		#df_fsd50k = pd.read_csv("/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
-		#self.files_fsd50k = np.asarray(df_fsd50k.iloc[:, 0], dtype=str)
+		df_fsd50k = pd.read_csv("/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
+		self.files_fsd50k = np.asarray(df_fsd50k.iloc[:, 0], dtype=str)
 
 	def __len__(self):
 		return len(self.audio_fnames)
@@ -435,10 +435,18 @@ class AudioSet(Dataset):
 			raise NotImplementedError
 		
 		else:
-			wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
-			wav = torch.tensor(wav)
-			lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
-			lms = lms.unsqueeze(0)
+			try:
+				
+				wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
+				wav = torch.tensor(wav)
+				lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
+				lms = lms.unsqueeze(0)
+			except AttributeError:
+				#pass
+				fname = np.random.choice(self.files_fsd50k)
+				audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
+				lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
+
 			lms= trim_pad(self.cfg, lms)
 			
 			#try:
