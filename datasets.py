@@ -436,9 +436,11 @@ class AudioSet(Dataset):
 		
 		else:
 			try:
-				
+				print("flag")
 				wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
+				print("flag2")
 				wav = torch.tensor(wav)
+				print("flag3")
 				lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
 				lms = lms.unsqueeze(0)
 			except AttributeError:
