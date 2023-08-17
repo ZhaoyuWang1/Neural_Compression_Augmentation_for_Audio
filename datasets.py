@@ -447,7 +447,7 @@ class AudioSet(Dataset):
 				print("flag2")
 				wav = torch.tensor(wav)
 				print("flag3")
-				lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
+				lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
 				lms = lms.unsqueeze(0)
 			except AttributeError:
 				#pass
