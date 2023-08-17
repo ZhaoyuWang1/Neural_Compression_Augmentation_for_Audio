@@ -443,6 +443,7 @@ class AudioSet(Dataset):
 				lms = lms.unsqueeze(0)
 			except AttributeError:
 				#pass
+				print("##########")
 				fname = np.random.choice(self.files_fsd50k)
 				audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
 				lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
@@ -462,6 +463,9 @@ class AudioSet(Dataset):
 			# transforms
 			if self.transform is not None:
 				lms = self.transform(lms)
+			#print(len(lms))
+			#print(lms[0])
+			#print(lms[1])
 			return lms, label_indices
 
 def calculate_norm_stats(dataset, n_norm_calc=10000):
