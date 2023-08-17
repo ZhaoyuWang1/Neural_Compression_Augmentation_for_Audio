@@ -436,6 +436,7 @@ class AudioSet(Dataset):
 		
 		else:
 			try:
+				print(audio_fpath)
 				print("flag")
 				wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
 				print("flag2")
