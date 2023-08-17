@@ -442,7 +442,7 @@ class AudioSet(Dataset):
 				#wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
 				wav, rt = sf.read(audio_fpath)
 				print(wav)
-				print("sampling rate = {} Hz, length = {} samples, channels = {}".format(rt, *wav.shape))
+				#print("sampling rate = {} Hz, length = {} samples, channels = {}".format(rt, *wav.shape))
 				wav = np.mean(wav, axis=1)
 				print("flag2")
 				wav = torch.tensor(wav)
