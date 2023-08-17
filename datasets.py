@@ -437,21 +437,15 @@ class AudioSet(Dataset):
 		
 		else:
 			try:
-				#print(audio_fpath)
-				print("flag")
 				#wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
 				wav, rt = sf.read(audio_fpath)
-				#print(wav)
-				#print("sampling rate = {} Hz, length = {} samples, channels = {}".format(rt, *wav.shape))
 				wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
-				print("flag2")
 				wav = torch.tensor(wav)
-				print("flag3")
 				lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
 				lms = lms.unsqueeze(0)
+				print(f"loaded wav2spe shape {lms.shape}")
 			except AttributeError:
-				#pass
-				print("##########")
+				print("########")
 				fname = np.random.choice(self.files_fsd50k)
 				audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
 				lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
@@ -472,7 +466,7 @@ class AudioSet(Dataset):
 			if self.transform is not None:
 				lms = self.transform(lms)
 			#print(len(lms))
-			#print(lms[0])
+			print(f"the output size {lms[0].shape}")
 			#print(lms[1])
 			return lms, label_indices
 
