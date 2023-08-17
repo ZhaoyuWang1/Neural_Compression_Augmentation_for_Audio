@@ -438,7 +438,10 @@ class AudioSet(Dataset):
 			try:
 				print(audio_fpath)
 				print("flag")
-				wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
+				fname = np.random.choice(self.files_fsd50k)
+				audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
+				lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
+				#wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
 				print("flag2")
 				wav = torch.tensor(wav)
 				print("flag3")
