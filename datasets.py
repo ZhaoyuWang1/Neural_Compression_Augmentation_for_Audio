@@ -442,11 +442,11 @@ class AudioSet(Dataset):
 				audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
 				lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
 				#wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
-				print("flag2")
-				wav = torch.tensor(wav)
-				print("flag3")
-				lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
-				lms = lms.unsqueeze(0)
+				#print("flag2")
+				#wav = torch.tensor(wav)
+				#print("flag3")
+				#lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
+				#lms = lms.unsqueeze(0)
 			except AttributeError:
 				#pass
 				print("##########")
