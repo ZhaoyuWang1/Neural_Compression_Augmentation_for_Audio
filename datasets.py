@@ -380,7 +380,8 @@ class AudioSet(Dataset):
 		self.index_dict = make_index_dict(os.path.join(self.base_dir, "class_labels_indices.csv"))
 		self.label_num = len(self.index_dict)
 
-		self.temp_dir = '/vol/bitbucket/zw1222/proj/temp'
+		self.temp_dir1 = '/vol/bitbucket/zw1222/proj/temp1'
+		self.temp_dir2 = '/vol/bitbucket/zw1222/proj/temp2'
 		self.to_melspecgram = AT.MelSpectrogram(
 			sample_rate=16000,
 			n_fft=1024,
@@ -414,13 +415,18 @@ class AudioSet(Dataset):
 		# load wav files:
 		audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
 		if self.cfg.mp3_compression:
-
-			bitrate_1 = '128k' #randomise
-			bitrate_2 = '64k' #randomise
-			wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_dir, bitrate=bitrate_1)
-			wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_dir, bitrate=bitrate_2)
-			lms_1 = (self.to_melspecgram(wav_1) + torch.finfo().eps).log().unsqueeze(0)
-			lms_2 = (self.to_melspecgram(wav_2) + torch.finfo().eps).log().unsqueeze(0)
+			
+			array = np.array([8,12,16,24,32,48,256])
+			bit_1 = np.random.choice(array)
+			bit_2 = np.random.choice(array)
+			bitrate_1 = f'{bit_1}k' #randomise
+			bitrate_2 = f'{bit_2}k' #randomise
+			print(bitrate_1)
+			print(bitrate_2)
+			wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_dir1, bitrate=bitrate_1)
+			wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_dir2, bitrate=bitrate_2)
+			lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+			lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
 			lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
 			if self.norm_stats is not None:
 				lms_1 = (lms_1- self.norm_stats[0]) / self.norm_stats[1]
@@ -437,7 +443,6 @@ class AudioSet(Dataset):
 		
 		else:
 			wav, rt = sf.read(audio_fpath)
-			print(rt)
 			wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
 			wav = torch.tensor(wav)
 			lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
@@ -473,7 +478,8 @@ def extract_compressed_wav(audio_fpath, tmp_path, bitrate='32k', sr=16000):
 	mp3_path = compress_to_mp3(audio_fpath, tmp_path, bitrate)
 	wav_path = convert_to_wav(mp3_path, tmp_path)
 	delete_file(mp3_path)
-	wav, org_sr = librosa.load(wav_path, sr=sr)
+	wav, org_sr = sf.read(audio_fpath)
+	wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
 	wav = torch.tensor(wav)
 	delete_file(wav_path)
 	return wav, org_sr
