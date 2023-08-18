@@ -13,6 +13,7 @@ import librosa
 import json
 import os
 
+import soundfile as sf
 
 def make_index_dict(label_csv):
 	index_lookup = {}
@@ -393,8 +394,8 @@ class AudioSet(Dataset):
 		)
 
 		# also read in FSD50K csv files (in case of ValueErrors for incorrectly downloaded AS samples)
-		#df_fsd50k = pd.read_csv("/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
-		#self.files_fsd50k = np.asarray(df_fsd50k.iloc[:, 0], dtype=str)
+		df_fsd50k = pd.read_csv("/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
+		self.files_fsd50k = np.asarray(df_fsd50k.iloc[:, 0], dtype=str)
 
 	def __len__(self):
 		return len(self.audio_fnames)
@@ -416,8 +417,11 @@ class AudioSet(Dataset):
 		audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
 		if self.cfg.mp3_compression:
 
-			bitrate_1 = '128k' #randomise
-			bitrate_2 = '64k' #randomise
+			array = np.array([8,12,16,24,32,48,256])
+			bit_1 = np.random.choice(array)
+			bit_2 = np.random.choice(array)
+			bitrate_1 = f'{bit_1}k' #randomise
+			bitrate_2 = f'{bit_2}k' #randomise
 			wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
 			wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
 			lms_1 = (self.to_melspecgram(wav_1) + torch.finfo().eps).log().unsqueeze(0)
@@ -437,20 +441,12 @@ class AudioSet(Dataset):
 			raise NotImplementedError
 		
 		else:
-			wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
+			wav, rt = sf.read(audio_fpath)
+			wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
 			wav = torch.tensor(wav)
 			lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
 			lms = lms.unsqueeze(0)
 			lms= trim_pad(self.cfg, lms)
-			
-			#try:
-				#lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
-			#except ValueError:
-				#pass
-				#fname = np.random.choice(self.files_fsd50k)
-				#audio_fpath = "data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
-				#lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
-			
 			if self.norm_stats is not None:
 				lms = (lms - self.norm_stats[0]) / self.norm_stats[1]
 			# transforms
@@ -482,8 +478,8 @@ def extract_compressed_wav(audio_fpath, tmp_path, bitrate='32k', sr=16000):
 	mp3_path = compress_to_mp3(audio_fpath, tmp_path, bitrate)
 	wav_path = convert_to_wav(mp3_path, tmp_path)
 	delete_file(mp3_path)
-	wav, org_sr = librosa.load(wav_path, sr=sr)
-	print(f"wave is : {wav}")
+	wav, org_sr = sf.read(audio_fpath)
+	wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
 	wav = torch.tensor(wav)
 	delete_file(wav_path)
 	return wav, org_sr
@@ -506,9 +502,9 @@ def convert_to_wav(mp3_path, output_directory):
 def delete_file(file_path):
 	if os.path.exists(file_path):
 		os.remove(file_path)
-		print("---DELETED---")
-	else:
-		print("CANNOT FIND")
+		#print("---DELETED---")
+	#else:
+		#sprint("CANNOT FIND")
     
 # Trim or pad
 def trim_pad(cfg, lms):
