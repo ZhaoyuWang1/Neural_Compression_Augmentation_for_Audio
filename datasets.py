@@ -436,38 +436,18 @@ class AudioSet(Dataset):
 			raise NotImplementedError
 		
 		else:
-			try:
-				#wav, org_sr = librosa.load(audio_fpath, sr=self.cfg.sample_rate)
-				wav, rt = sf.read(audio_fpath)
-				wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
-				wav = torch.tensor(wav)
-				lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
-				lms = lms.unsqueeze(0)
-				print(f"loaded wav2spe shape {lms.shape}")
-			except AttributeError:
-				print("########")
-				fname = np.random.choice(self.files_fsd50k)
-				audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
-				lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
-
+			wav, rt = sf.read(audio_fpath)
+			print(rt)
+			wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
+			wav = torch.tensor(wav)
+			lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
+			lms = lms.unsqueeze(0)
 			lms= trim_pad(self.cfg, lms)
-			
-			#try:
-				#lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
-			#except ValueError:
-				#pass
-				#fname = np.random.choice(self.files_fsd50k)
-				#audio_fpath = "data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
-				#lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
-			
 			if self.norm_stats is not None:
 				lms = (lms - self.norm_stats[0]) / self.norm_stats[1]
 			# transforms
 			if self.transform is not None:
 				lms = self.transform(lms)
-			#print(len(lms))
-			print(f"the output size {lms[0].shape}")
-			#print(lms[1])
 			return lms, label_indices
 
 def calculate_norm_stats(dataset, n_norm_calc=10000):
