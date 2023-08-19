@@ -335,7 +335,7 @@ class AudioSet(Dataset):
 		audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.npy"]))
 		try:
 			lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
-		except ValueError:
+		except FileNotFoundError:
 			fname = np.random.choice(self.files_fsd50k)
 			audio_fpath = "/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
 			lms = torch.tensor(np.load(audio_fpath)).unsqueeze(0)
