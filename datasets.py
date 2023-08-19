@@ -290,7 +290,7 @@ class NSynth_HEAR(Dataset):
 
 		return lms, label
 
-"""
+#"""
 class AudioSet(Dataset):
 	def __init__(self, cfg, transform=None, norm_stats=None):
 		super().__init__()
@@ -301,7 +301,7 @@ class AudioSet(Dataset):
 		self.base_dir = "/vol/bitbucket/jla21/proj/data/audioset_lms/"
 
 		# load in csv file
-		df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
+		df = pd.read_csv(os.path.join('/vol/bitbucket/zw1222/proj', "unbalanced_train_segments-downloaded.csv"), header=None)
 		# first column contains the audio fnames
 		self.audio_fnames = np.asarray(df.iloc[:, 0])
 		# second column contains the labels (separated by # for multi-label)
@@ -455,7 +455,7 @@ class AudioSet(Dataset):
 			if self.transform is not None:
 				lms = self.transform(lms)
 			return lms, label_indices
-
+"""
 def calculate_norm_stats(dataset, n_norm_calc=10000):
 
 	# calculate norm stats (randomly sample n_norm_calc points from dataset)
