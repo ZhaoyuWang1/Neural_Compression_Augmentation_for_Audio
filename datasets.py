@@ -290,7 +290,7 @@ class NSynth_HEAR(Dataset):
 
 		return lms, label
 
-#"""
+"""
 class AudioSet(Dataset):
 	def __init__(self, cfg, transform=None, norm_stats=None):
 		super().__init__()
@@ -455,7 +455,7 @@ class AudioSet(Dataset):
 			if self.transform is not None:
 				lms = self.transform(lms)
 			return lms, label_indices
-"""
+#"""
 def calculate_norm_stats(dataset, n_norm_calc=10000):
 
 	# calculate norm stats (randomly sample n_norm_calc points from dataset)
