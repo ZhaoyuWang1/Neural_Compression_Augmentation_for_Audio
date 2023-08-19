@@ -445,7 +445,7 @@ class AudioSet(Dataset):
 			wav, rt = sf.read(audio_fpath)
 			wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
 			wav = torch.tensor(wav)
-			#print(audio_fpath)
+			print(audio_fpath)
 			lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
 			lms = lms.unsqueeze(0)
 			lms= trim_pad(self.cfg, lms)
