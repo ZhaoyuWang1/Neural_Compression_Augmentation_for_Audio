@@ -442,7 +442,7 @@ class AudioSet(Dataset):
 		
 		else:
 			wav, rt = sf.read(audio_fpath)
-			wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
+			wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
 			wav = torch.tensor(wav)
 			lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
 			lms = lms.unsqueeze(0)
@@ -479,7 +479,7 @@ def extract_compressed_wav(audio_fpath, tmp_path, bitrate='32k', sr=16000):
 	wav_path = convert_to_wav(mp3_path, tmp_path)
 	delete_file(mp3_path)
 	wav, org_sr = sf.read(audio_fpath)
-	wav = np.mean(wav, axis=1) if wav.shape[-1] == 2 else wav
+	wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
 	wav = torch.tensor(wav)
 	delete_file(wav_path)
 	return wav, org_sr
