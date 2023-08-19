@@ -411,7 +411,7 @@ class AudioSet(Dataset):
 		for label_str in labels.split('#'):
 			label_indices[int(self.index_dict[label_str])] = 1.0
 		label_indices = torch.FloatTensor(label_indices)
-		print(f"current piece of data is :{idx}")
+		#print(f"current piece of data is :{idx}")
 		# load wav files:
 		audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
 		if self.cfg.mp3_compression:
@@ -421,8 +421,8 @@ class AudioSet(Dataset):
 			bit_2 = np.random.choice(array)
 			bitrate_1 = f'{bit_1}k' #randomise
 			bitrate_2 = f'{bit_2}k' #randomise
-			print(bitrate_1)
-			print(bitrate_2)
+			#print(bitrate_1)
+			#print(bitrate_2)
 			wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_dir1, bitrate=bitrate_1)
 			wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_dir2, bitrate=bitrate_2)
 			lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
