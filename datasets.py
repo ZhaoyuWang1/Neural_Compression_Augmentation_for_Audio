@@ -392,6 +392,7 @@ class AudioSet(Dataset):
 			f_max=7800,
 			power=2,
 		)
+		self.unit_length = int(cfg.unit_sec * cfg.sample_rate)
 		# also read in FSD50K csv files (in case of ValueErrors for incorrectly downloaded AS samples)
 		df_fsd50k = pd.read_csv("/vol/bitbucket/jla21/proj/data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
 		self.files_fsd50k = np.asarray(df_fsd50k.iloc[:, 0], dtype=str)
@@ -445,10 +446,15 @@ class AudioSet(Dataset):
 			wav, rt = sf.read(audio_fpath)
 			wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
 			wav = torch.tensor(wav)
-			print(audio_fpath)
+
+			#pad wave in advance so that it wont cause error when generating specgram
+			wav = trim_pad(wav, self.unit_length)
+
+			#to log mel specgram
+			#print(audio_fpath)
 			lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
 			lms = lms.unsqueeze(0)
-			lms= trim_pad(self.cfg, lms)
+			#lms= trim_pad(self.cfg, lms)
 			if self.norm_stats is not None:
 				lms = (lms - self.norm_stats[0]) / self.norm_stats[1]
 			# transforms
@@ -508,6 +514,19 @@ def delete_file(file_path):
         #print(f"{file_path} not found")
 
 # Trim or pad
+def trim_pad(wav, unit_length):
+
+	length_adj = unit_length - len(wav)
+	if length_adj > 0:
+		half_adj = length_adj // 2
+		wav = F.pad(wav, (half_adj, length_adj - half_adj))
+	#randomly crop unit length wave
+	length_adj = len(wav) - unit_length
+	start = random.randint(0, length_adj) if length_adj > 0 else 0
+	wav = wav[start:start + unit_length]
+	return wav
+
+"""
 def trim_pad(cfg, lms):
 	l = lms.shape[-1]
 	if l > cfg.crop_frames:
@@ -521,5 +540,6 @@ def trim_pad(cfg, lms):
 	lms = lms.to(torch.float)
 	#print(f"the shape of spectrogram is:{lms.shape}")
 	return lms
+"""
 if __name__ == "__main__":
 	pass 
