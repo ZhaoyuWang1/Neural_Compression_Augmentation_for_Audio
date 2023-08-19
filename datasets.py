@@ -419,6 +419,7 @@ class AudioSet(Dataset):
 			
 			array = np.array([8,12,16,24,32,48,256])
 			bit_1 = np.random.choice(array)
+			array = array[array!=bit_1]
 			bit_2 = np.random.choice(array)
 			bitrate_1 = f'{bit_1}k' #randomise
 			bitrate_2 = f'{bit_2}k' #randomise
