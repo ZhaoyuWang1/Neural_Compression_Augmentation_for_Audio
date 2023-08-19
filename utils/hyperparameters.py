@@ -96,7 +96,7 @@ def get_std_parameters():
 	parser.add_argument('--lr_biases', type=float, default=None)
 	parser.add_argument('--wd', type=float, default=None)
 
-	parser.add_argument('--mp3_compression', action='store_true', default=False)
+	parser.add_argument('--mp3_compression', action='store_true', default=True)
 	parser.add_argument('--ldm_compression', action='store_true', default=False)
 	parser.add_argument('--ae_compression', action='store_true', default=False)
 	parser.add_argument('--vae_compression', action='store_true', default=False)
