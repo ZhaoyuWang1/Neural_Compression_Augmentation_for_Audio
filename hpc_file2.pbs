@@ -1,0 +1,19 @@
+#PBS -l walltime=64:00:00
+#PBS -l select=1:ncpus=25:ngpus=1:mem=128gb:gpu_type=RTX6000
+
+
+module load anaconda3/personal
+source activate ABT_env
+
+wandb login 6985287168c4011de582a1a3c5ac25ed5ef23bd2
+
+cd $PBS_O_WORKDIR
+
+python main_2.py\
+    --num_workers 25\
+    --mp3_compression\
+    --mixup\
+    --RRC\
+    --RLF\
+
+conda deactivate
