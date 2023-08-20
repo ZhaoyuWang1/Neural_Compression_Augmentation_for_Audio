@@ -49,7 +49,7 @@ class FSD50K(Dataset):
 		)
 		# load in csv files
 		if split != 'test':
-			self.df = pd.read_csv("data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
+			self.df = pd.read_csv("/rds/general/user/zw1222/ephemeral/data/FSD50K_lms/FSD50K.ground_truth/dev.csv", header=None)
 			if split == 'train_val':
 				pass 
 			elif split == 'train':
@@ -57,10 +57,10 @@ class FSD50K(Dataset):
 			elif split == 'val':
 				self.df = self.df[self.df.iloc[:, 3] == 'val']
 		else:
-			self.df = pd.read_csv("data/FSD50K_lms/FSD50K.ground_truth/eval.csv", header=None)	
+			self.df = pd.read_csv("/rds/general/user/zw1222/ephemeral/data/FSD50K_lms/FSD50K.ground_truth/eval.csv", header=None)	
 		self.files = np.asarray(self.df.iloc[:, 0], dtype=str)
 		self.labels = np.asarray(self.df.iloc[:, 2], dtype=str)  # mids (separated by ,)
-		self.index_dict = make_index_dict("data/FSD50K_lms/FSD50K.ground_truth/vocabulary.csv")
+		self.index_dict = make_index_dict("/rds/general/user/zw1222/ephemeral/data/FSD50K_lms/FSD50K.ground_truth/vocabulary.csv")
 		self.label_num = len(self.index_dict)
 
 
@@ -80,9 +80,9 @@ class FSD50K(Dataset):
 		if self.cfg.load_lms:
 			# load lms
 			if self.split != 'test':
-				audio_path = "data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
+				audio_path = "/rds/general/user/zw1222/ephemeral/data/FSD50K_lms/FSD50K.dev_audio/" + fname + ".npy"
 			else:
-				audio_path = "data/FSD50K_lms/FSD50K.eval_audio/" + fname + ".npy"
+				audio_path = "/rds/general/user/zw1222/ephemeral/data/FSD50K_lms/FSD50K.eval_audio/" + fname + ".npy"
 			lms = torch.tensor(np.load(audio_path)).unsqueeze(0)
 			# Trim or pad
 			l = lms.shape[-1]
@@ -98,9 +98,9 @@ class FSD50K(Dataset):
 		else:
 			# load raw audio
 			if self.split != 'test':
-				audio_path = "data/FSD50K/FSD50K.dev_audio/" + fname + ".wav"
+				audio_path = "/rds/general/user/zw1222/ephemeral/data/FSD50K/FSD50K.dev_audio/" + fname + ".wav"
 			else:
-				audio_path = "data/FSD50K/FSD50K.eval_audio/" + fname + ".wav"
+				audio_path = "/rds/general/user/zw1222/ephemeral/data/FSD50K/FSD50K.eval_audio/" + fname + ".wav"
 			wav, org_sr = librosa.load(audio_path, sr=self.cfg.sample_rate)
 			wav = torch.tensor(wav)  # (length,)
 			# zero padding to both ends
