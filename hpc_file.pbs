@@ -1,5 +1,5 @@
-#PBS -l walltime=01:00:00
-#PBS -l select=1:ncpus=80:ngpus=1:mem=200gb:gpu_type=RTX6000
+#PBS -l walltime=64:00:00
+#PBS -l select=1:ncpus=25:ngpus=1:mem=128gb:gpu_type=RTX6000
 
 
 module load anaconda3/personal
@@ -10,10 +10,7 @@ wandb login 6985287168c4011de582a1a3c5ac25ed5ef23bd2
 cd $PBS_O_WORKDIR
 
 python main_2.py\
-    --projector_out_dim 1048\
-    --num_workers 4\
-    --lr_schedule\
-    --use_fp16\
+    --num_workers 25\
     --mp3_compression
 
 conda deactivate
