@@ -426,8 +426,8 @@ class AudioSet(Dataset):
 			wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
 			wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
 			wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
-			lms_1 = (self.to_melspecgram(wav_1) + torch.finfo().eps).log().unsqueeze(0)
-			lms_2 = (self.to_melspecgram(wav_2) + torch.finfo().eps).log().unsqueeze(0)
+			lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+			lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
 			#lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
 			if self.norm_stats is not None:
 				lms_1 = (lms_1- self.norm_stats[0]) / self.norm_stats[1]
@@ -451,7 +451,7 @@ class AudioSet(Dataset):
 			wav = trim_pad(wav, self.unit_length)
 
 			#to log mel specgram
-			lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
+			lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
 			lms = lms.unsqueeze(0)
 			#lms= trim_pad(self.cfg, lms)
 			if self.norm_stats is not None:
