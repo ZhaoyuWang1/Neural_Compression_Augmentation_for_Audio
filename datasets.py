@@ -416,7 +416,7 @@ class AudioSet(Dataset):
 		# load wav files:
 		audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
 		if self.cfg.mp3_compression:
-
+			print(f"path is : {audio_fpath}")
 			array = np.array([8,12,16,24,32,48,256])
 			bit_1 = np.random.choice(array)
 			array = array[array!=bit_1]
@@ -493,18 +493,18 @@ def extract_compressed_wav(audio_fpath, tmp_path, bitrate='32k', sr=16000):
 
 # Compress to MP3
 def compress_to_mp3(input_path, output_directory, bitrate="192k"):
-    audio = AudioSegment.from_wav(input_path)
-    output_path_mp3 = os.path.join(output_directory, os.path.basename(input_path).replace(".wav", ".mp3"))
-    #print(output_path_mp3)
-    audio.export(output_path_mp3, format="mp3", bitrate=bitrate)
-    return output_path_mp3
+	audio = AudioSegment.from_wav(input_path)
+	output_path_mp3 = os.path.join(output_directory, os.path.basename(input_path).replace(".wav", ".mp3"))
+	#print(output_path_mp3)
+	audio.export(output_path_mp3, format="mp3", bitrate=bitrate)
+	return output_path_mp3
 
 # Convert back to WAV
 def convert_to_wav(mp3_path, output_directory):
-    audio = AudioSegment.from_mp3(mp3_path)
-    output_path_wav = os.path.join(output_directory, os.path.basename(mp3_path).replace(".mp3", ".wav"))
-    audio.export(output_path_wav, format="wav")
-    return output_path_wav
+	audio = AudioSegment.from_mp3(mp3_path)
+	output_path_wav = os.path.join(output_directory, os.path.basename(mp3_path).replace(".mp3", ".wav"))
+	audio.export(output_path_wav, format="wav")
+	return output_path_wav
 
 def delete_file(file_path):
 	if os.path.exists(file_path):
@@ -512,7 +512,7 @@ def delete_file(file_path):
 		#print("---DELETED---")
 	#else:
 		#sprint("CANNOT FIND")
-    
+	
 # Trim or pad
 def trim_pad(wav, unit_length):
 
