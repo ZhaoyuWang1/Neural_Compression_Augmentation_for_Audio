@@ -378,6 +378,7 @@ class AudioSet(Dataset):
         else:
             self.base_dir = "/rds/general/user/zw1222/home/debug/SSL_audio/data/audioset"
             df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
+        print(f"base dir is : {self.base_dir}")
         # first column contains the audio fnames
         self.audio_fnames = np.asarray(df.iloc[:, 0])
         # second column contains the labels (separated by # for multi-label)
@@ -425,7 +426,7 @@ class AudioSet(Dataset):
         audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
         if self.cfg.mp3_compression:
             #modify offline, and include "no change" option
-            print(f"path is : {audio_fpath}")
+            #print(f"path is : {audio_fpath}")
             array = np.array([8,12,16,24,32,48,256])
             bit_1 = np.random.choice(array)
             array = array[array!=bit_1]
@@ -449,7 +450,7 @@ class AudioSet(Dataset):
             return lms, label_indices
             
         elif self.cfg.ldm_compression:
-
+            print("ldm")
             array = np.array([0,1])
             bit_1 = np.random.choice(array)
             array = array[array!=bit_1]
@@ -479,6 +480,7 @@ class AudioSet(Dataset):
             return lms, label_indices
         
         else:
+            print('baseline')
             wav, rt = sf.read(audio_fpath)
             wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
             wav = torch.tensor(wav)
