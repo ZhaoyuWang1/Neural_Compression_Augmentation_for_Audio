@@ -386,7 +386,7 @@ class AudioSet(Dataset):
         # third column contains the identifier (balanced_train_segments or unbalanced_train_segments)
         self.ident = np.asarray(df.iloc[:, 2])
         # load in class labels and create label -> index look-up dict 
-        self.index_dict = make_index_dict(os.path.join(self.base_dir, "class_labels_indices.csv"))
+        self.index_dict = make_index_dict(os.path.join("/rds/general/user/zw1222/home/debug/SSL_audio/data/audioset", "class_labels_indices.csv"))
         self.label_num = len(self.index_dict)
 
         self.temp_1 = self.cfg.temp_1 #self.temp_1 = '/rds/general/user/zw1222/ephemeral/temp_1'
