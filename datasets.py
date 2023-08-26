@@ -436,7 +436,9 @@ class AudioSet(Dataset):
             bitrate_1 = f'{bit_1}k' #randomise
             bitrate_2 = f'{bit_2}k' #randomise
             wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
+            print(1)
             wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
+            print(2)
             wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
             lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
             lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
