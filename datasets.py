@@ -462,10 +462,12 @@ class AudioSet(Dataset):
             audio_fpath_1 = audio_fpath if bit_1==0 else os.path.join(os.path.join(*[self.base_dir, "lambda_16", f"{audio_fname}.wav"]))
             audio_fpath_2 = audio_fpath if bit_2==0 else os.path.join(os.path.join(*[self.base_dir, "lambda_16", f"{audio_fname}.wav"]))
             wav_1, rt = sf.read(audio_fpath_1)
+            print(1)
             wav_1 = np.mean(wav_1, axis=1) if len(wav_1.shape) != 1 else wav_1
             wav_1 = torch.tensor(wav_1)
 
             wav_2, rt = sf.read(audio_fpath_2)
+            print(2)
             wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
             wav_2 = torch.tensor(wav_2)
 
