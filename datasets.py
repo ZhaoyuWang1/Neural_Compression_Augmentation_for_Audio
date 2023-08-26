@@ -370,13 +370,13 @@ class AudioSet(Dataset):
 
         # load in csv file
         if self.cfg.mp3_compression:
-            self.base_dir = "/rds/general/user/zw1222/home/debug/SSL_audio/data/audioset"
             df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
+            self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3'
         elif self.cfg.ldm_compression:
-            self.base_dir = "/rds/general/user/zw1222/ephemeral/audioset_aug"
-            df = pd.read_csv(os.path.join(self.base_dir, "lambda_16-downloaded.csv"), header=None)
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug"
+            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None)
+            
         else:
-            self.base_dir = "/rds/general/user/zw1222/home/debug/SSL_audio/data/audioset"
             df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
         print(f"base dir is : {self.base_dir}")
         # first column contains the audio fnames
@@ -429,16 +429,26 @@ class AudioSet(Dataset):
         if self.cfg.mp3_compression:
             #modify offline, and include "no change" option
             #print(f"path is : {audio_fpath}")
-            array = np.array([8,12,16,24,32,48,256])
+            array = np.array([0,8,12,16,24,32,48,256])
             bit_1 = np.random.choice(array)
             array = array[array!=bit_1]
             bit_2 = np.random.choice(array)
             bitrate_1 = f'{bit_1}k' #randomise
             bitrate_2 = f'{bit_2}k' #randomise
-            wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
+            path1 = audio_fpath if bit_1==0 else os.path.join(self.base_dir_mp3, bitrate_1)
+            path2 = audio_fpath if bit_2==0 else os.path.join(self.base_dir_mp3, bitrate_2)
+            print(path1, path2)
+            #wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
+            wav_1, rt = sf.read(path1)
             print(1)
-            wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
+            wav_1 = np.mean(wav_1, axis=1) if len(wav_1.shape) != 1 else wav_1
+            wav_1 = torch.tensor(wav_1)
+            #wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
+            wav_2, rt = sf.read(path2)
             print(2)
+            wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
+            wav_2 = torch.tensor(wav_2)
+
             wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
             lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
             lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
@@ -459,8 +469,8 @@ class AudioSet(Dataset):
             bit_1 = np.random.choice(array)
             array = array[array!=bit_1]
             bit_2 = np.random.choice(array)
-            audio_fpath_1 = audio_fpath if bit_1==0 else os.path.join(os.path.join(*[self.base_dir, "lambda_16", f"{audio_fname}.wav"]))
-            audio_fpath_2 = audio_fpath if bit_2==0 else os.path.join(os.path.join(*[self.base_dir, "lambda_16", f"{audio_fname}.wav"]))
+            audio_fpath_1 = audio_fpath if bit_1==0 else os.path.join(os.path.join(*[self.base_dir_ldm, "lambda_16", f"{audio_fname}.wav"]))
+            audio_fpath_2 = audio_fpath if bit_2==0 else os.path.join(os.path.join(*[self.base_dir_ldm, "lambda_16", f"{audio_fname}.wav"]))
             wav_1, rt = sf.read(audio_fpath_1)
             print(1)
             wav_1 = np.mean(wav_1, axis=1) if len(wav_1.shape) != 1 else wav_1
