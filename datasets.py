@@ -374,8 +374,7 @@ class AudioSet(Dataset):
             self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3'
         elif self.cfg.ldm_compression:
             self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug"
-            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None)
-            
+            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None)            
         else:
             df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
         print(f"base dir is : {self.base_dir}")
@@ -435,8 +434,8 @@ class AudioSet(Dataset):
             bit_2 = np.random.choice(array)
             bitrate_1 = f'{bit_1}k' #randomise
             bitrate_2 = f'{bit_2}k' #randomise
-            path1 = audio_fpath if bit_1==0 else os.path.join(self.base_dir_mp3, bitrate_1)
-            path2 = audio_fpath if bit_2==0 else os.path.join(self.base_dir_mp3, bitrate_2)
+            path1 = audio_fpath if bit_1==0 else os.path.join(*[self.base_dir_mp3, bitrate_1, f"{audio_fname}.wav"])
+            path2 = audio_fpath if bit_2==0 else os.path.join(*[self.base_dir_mp3, bitrate_2, f"{audio_fname}.wav"])
             print(path1, path2)
             #wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
             wav_1, rt = sf.read(path1)
