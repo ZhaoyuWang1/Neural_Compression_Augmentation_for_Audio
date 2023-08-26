@@ -421,9 +421,11 @@ class AudioSet(Dataset):
         for label_str in labels.split('#'):
             label_indices[int(self.index_dict[label_str])] = 1.0
         label_indices = torch.FloatTensor(label_indices)
-        print(f"current piece of data is :{idx}")
         # load wav files:
         audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
+        print("#######")
+        print(audio_fname)
+        print("#######")
         if self.cfg.mp3_compression:
             #modify offline, and include "no change" option
             #print(f"path is : {audio_fpath}")
