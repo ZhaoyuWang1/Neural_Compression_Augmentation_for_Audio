@@ -589,7 +589,6 @@ class AudioSet(Dataset):
             if self.transform is not None:
                 lms = self.transform(lms)
             return lms, label_indices
-#"""
 
 def calculate_norm_stats(dataset, n_norm_calc=10000):
 
