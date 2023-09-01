@@ -449,7 +449,7 @@ class AudioSet(Dataset):
             wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
             wav_2 = torch.tensor(wav_2)
 
-            wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
+            wav_1, wav_2 =  trim_pad_2(wav_1, wav_2, self.unit_length)
             lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
             lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
             #lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
@@ -464,7 +464,6 @@ class AudioSet(Dataset):
             return lms, label_indices
             
         elif self.cfg.ldm_compression:
-            print("ldm")
             array = np.array([0,1])
             bit_1 = np.random.choice(array)
             array = array[array!=bit_1]
@@ -479,7 +478,7 @@ class AudioSet(Dataset):
             wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
             wav_2 = torch.tensor(wav_2)
 
-            wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
+            wav_1, wav_2 =  trim_pad_2(wav_1, wav_2, self.unit_length)
             lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
             lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
             #lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
@@ -496,7 +495,6 @@ class AudioSet(Dataset):
             array = np.array([0,1,2])
             choice = np.random.choice(array)
             if choice == 0:
-                print('baseline')
                 wav, rt = sf.read(audio_fpath)
                 wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
                 wav = torch.tensor(wav)
@@ -532,7 +530,7 @@ class AudioSet(Dataset):
                 wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
                 wav_2 = torch.tensor(wav_2)
 
-                wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
+                wav_1, wav_2 =  trim_pad_2(wav_1, wav_2, self.unit_length)
                 lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
                 lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
                 #lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
@@ -546,7 +544,6 @@ class AudioSet(Dataset):
                     lms = [lms_1, lms_2]
                 return lms, label_indices
             else:        
-                print("ldm")
                 array = np.array([0,1])
                 bit_1 = np.random.choice(array)
                 array = array[array!=bit_1]
@@ -561,7 +558,7 @@ class AudioSet(Dataset):
                 wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
                 wav_2 = torch.tensor(wav_2)
 
-                wav_1, wav_2 = trim_pad(wav_1, self.unit_length), trim_pad(wav_2, self.unit_length)
+                wav_1, wav_2 = trim_pad_2(wav_1,wav_2, self.unit_length)
                 lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
                 lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
                 #lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
@@ -575,7 +572,6 @@ class AudioSet(Dataset):
                     lms = [lms_1, lms_2]
                 return lms, label_indices
         else:
-            print('baseline')
             wav, rt = sf.read(audio_fpath)
             wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
             wav = torch.tensor(wav)
@@ -647,6 +643,20 @@ def delete_file(file_path):
         #sprint("CANNOT FIND")
     
 # Trim or pad
+def trim_pad_2(wav_1, wav_2, unit_length):
+
+    length_adj = unit_length - len(wav_1)
+    if length_adj > 0:
+        half_adj = length_adj // 2
+        wav_1 = F.pad(wav_1, (half_adj, length_adj - half_adj))
+        wav_2 = F.pad(wav_2, (half_adj, length_adj - half_adj))
+    #randomly crop unit length wave
+    length_adj = len(wav_1) - unit_length
+    start = random.randint(0, length_adj) if length_adj > 0 else 0
+    wav_1 = wav_1[start:start + unit_length]
+    wav_2 = wav_2[start:start + unit_length]
+    return wav_1, wav_2
+
 def trim_pad(wav, unit_length):
 
     length_adj = unit_length - len(wav)
@@ -658,6 +668,7 @@ def trim_pad(wav, unit_length):
     start = random.randint(0, length_adj) if length_adj > 0 else 0
     wav = wav[start:start + unit_length]
     return wav
+
 """
 def trim_pad(cfg, lms):
     l = lms.shape[-1]
