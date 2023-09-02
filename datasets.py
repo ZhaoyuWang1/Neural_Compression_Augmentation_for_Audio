@@ -426,9 +426,7 @@ class AudioSet(Dataset):
         label_indices = torch.FloatTensor(label_indices)
         # load wav files:
         audio_fpath = os.path.join(os.path.join(*[self.base_dir, "unbalanced_train_segments", f"{audio_fname}.wav"]))
-        print("#######")
-        print(audio_fname)
-        print("#######")
+        print(f"fname is : {audio_fname}")
         if self.cfg.mp3_compression:
             #modify offline, and include "no change" option
             #print(f"path is : {audio_fpath}")
@@ -607,7 +605,15 @@ def delete_file(file_path):
     
 # Trim or pad
 def trim_pad_2(wav_1, wav_2, unit_length):
-
+    length1 = wav_1.shape[0]
+    length2 = wav_2.shape[0]
+    # Compare lengths and pad the shorter one if necessary
+    if length1 > length2:
+        pad_amount = length1 - length2
+        wav_2 = F.pad(wav_2, (0, pad_amount))
+    elif length2 > length1:
+        pad_amount = length2 - length1
+        wav_1 = F.pad(wav_1, (0, pad_amount))
     length_adj = unit_length - len(wav_1)
     if length_adj > 0:
         half_adj = length_adj // 2
