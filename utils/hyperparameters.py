@@ -100,6 +100,7 @@ def get_std_parameters():
     parser.add_argument('--mp3_compression', action='store_true', default=False)
     parser.add_argument('--ldm_compression', action='store_true', default=False)
     parser.add_argument('--mixed_compression', action='store_true', default=False)
+    parser.add_argument('--mixed_compression2', action='store_true', default=False)
     
     
     parser.add_argument('--temp_1', default='/rds/general/user/zw1222/ephemeral/temp_1', type=str)

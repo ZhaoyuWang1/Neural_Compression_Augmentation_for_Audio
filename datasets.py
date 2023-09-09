@@ -533,6 +533,57 @@ class AudioSet(Dataset):
                 lms = [lms_1, lms_2]
             return lms, label_indices
 
+        elif self.cfg.mixed_compression2:
+            array = np.array([0,1,2])
+            choice_1 = np.random.choice(array)
+            array = np.array([1,2]) if choice_1==0 else array
+            choice_2 = np.random.choice(array)
+            choice_1_mp3 = None
+            choice_1_ldm = None
+            if choice_1 == 0:
+                wav_1, rt = sf.read(audio_fpath)
+            elif choice_1 == 1:
+                bitrates = np.array([8,12,16,24,32,48,256])
+                bit = np.random.choice(bitrates)
+                choice_1_mp3 = bit
+                bitrate = f'{bit}k' #randomise
+                path = os.path.join(*[self.base_dir_mp3, bitrate, f"{audio_fname}.wav"])
+                wav_1, rt = sf.read(path)
+            else:
+                bitrates = np.array([8,16])
+                bit = np.random.choice(bitrates)
+                choice_1_ldm = bit
+                audio_fpath_1 = os.path.join(os.path.join(*[self.base_dir_ldm, f"lambda_{bit}", f"{audio_fname}.wav"]))
+                wav_1, rt = sf.read(audio_fpath_1)
+
+            if choice_2 == 0:
+                wav_2, rt = sf.read(audio_fpath)
+            elif choice_2 == 1:
+                bitrates = np.array([8,12,16,24,32,48,256])
+                bit = np.random.choice(bitrates) if choice_1!=1 else np.random.choice(bitrates[bitrates!=choice_1_mp3])
+                bitrate = f'{bit}k' #randomise
+                path = os.path.join(*[self.base_dir_mp3, bitrate, f"{audio_fname}.wav"])
+                wav_2, rt = sf.read(path)
+            else:
+                bitrates = np.array([8,16])
+                bit = np.random.choice(bitrates) if choice_1!=2 else np.random.choice(bitrates[bitrates!=choice_1_ldm])
+                audio_fpath_2 = os.path.join(os.path.join(*[self.base_dir_ldm, f"lambda_{bit}", f"{audio_fname}.wav"]))
+                wav_2, rt = sf.read(audio_fpath_2)
+            
+            wav_1, wav_2 = torch.tensor(np.mean(wav_1, axis=1) if len(wav_1.shape)!=1 else wav_1), torch.tensor(np.mean(wav_2, axis=1) if len(wav_2.shape)!=1 else wav_2)
+            wav_1, wav_2 =  trim_pad_2(wav_1, wav_2, self.unit_length)
+            lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+            lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+            if self.norm_stats is not None:
+                lms_1 = (lms_1- self.norm_stats[0]) / self.norm_stats[1]
+                lms_2 = (lms_2- self.norm_stats[0]) / self.norm_stats[1]
+            #transforms (multitransform is false fo mp3/ldm compression)
+            if self.transform is not None:
+                lms = [self.transform(lms_1), self.transform(lms_2)]
+            else:
+                lms = [lms_1, lms_2]
+            return lms, label_indices
+        
         else:
             wav, rt = sf.read(audio_fpath)
             wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
