@@ -359,7 +359,7 @@ if __name__ == '__main__':
     # wandb init
     timestamp = datetime.datetime.now().strftime('%H:%M_%h%d')
     #save_name = '{}_{}_epochs'.format(args.model_type, args.epochs) if args.name == '' else '{}_{}'.format(args.model_type, args.name)
-    save_name = f"rrc_{args.RRC}_rlf_{args.RLF}_mix_{args.mixup}_noise_{args.Gnoise}_mp3_{args.mp3_compression}_ldm_{args.ldm_compression}_mix_{args.mixed_compression}"
+    save_name = f"rrc_{args.RRC}_rlf_{args.RLF}_mix_{args.mixup}_noise_{args.Gnoise}_mp3_{args.mp3_compression}_ldm_{args.ldm_compression}_mix_{args.mixed_compression}_mix2_{args.mixed_compression2}"
     save_name += timestamp
     if utils.is_main_process():
         wandb_run = wandb.init(
