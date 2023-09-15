@@ -373,14 +373,14 @@ class AudioSet(Dataset):
             df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
             self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3'
         elif self.cfg.ldm_compression:
-            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug"
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
             df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
         elif self.cfg.mixed_compression:
-            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug"
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
             df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
             self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3'
         elif self.cfg.mixed_compression2:
-            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug"
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
             df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
             self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3'
         else:
