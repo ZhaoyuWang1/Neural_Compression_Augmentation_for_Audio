@@ -23,6 +23,129 @@ def make_index_dict(label_csv):
             index_lookup[row['mids']] = row['index']
     return index_lookup
 
+class FSD50K_ablation(Dataset):
+    
+    def __init__(self, cfg, transform=None, norm_stats=None):
+        super().__init__()
+        
+        # initializations
+        self.cfg = cfg
+        self.transform = transform
+        self.norm_stats = norm_stats
+        #self.bitrate = bitrate
+        self.base_dir = '/rds/general/user/zw1222/ephemeral/FSD50K'
+
+        if self.cfg.mp3_compression:
+            df = pd.read_csv('/rds/general/user/zw1222/ephemeral/FSD50K_mp3/FSD50K.ground_truth/dev.csv', header=None)
+            self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/FSD50K_mp3/FSD50K.dev_audio'
+        elif self.cfg.ldm_compression:
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
+            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
+        elif self.cfg.mixed_compression:
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
+            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
+            self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3_2'
+        elif self.cfg.mixed_compression2:
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
+            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
+            self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3_2'
+        else:
+            df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
+        print(f"base dir is : {self.base_dir}")
+
+        self.unit_length = int(cfg.unit_sec * cfg.sample_rate)
+        self.to_melspecgram = AT.MelSpectrogram(
+            sample_rate=16000,
+            n_fft=1024,
+            win_length=1024,
+            hop_length=160,
+            n_mels=64,
+            f_min=60,
+            f_max=7800,
+            power=2,
+        )
+        
+        self.files = np.asarray(df.iloc[:, 0], dtype=str)
+        self.labels = np.asarray(df.iloc[:, 2], dtype=str)  # mids (separated by ,)
+        self.index_dict = make_index_dict("/rds/general/user/zw1222/ephemeral/FSD50K/FSD50K.ground_truth/vocabulary.csv")
+        self.label_num = len(self.index_dict)
+
+
+    def __len__(self):
+        return len(self.files)
+        
+        
+    def __getitem__(self, idx):
+        audio_fname = self.files[idx]
+        labels = self.labels[idx]
+        # initialize the label
+        label_indices = np.zeros(self.label_num)
+        # add sample labels
+        for label_str in labels.split(','):
+            label_indices[int(self.index_dict[label_str])] = 1.0
+        label_indices = torch.FloatTensor(label_indices)
+        
+        # load raw audio
+        
+        audio_fpath = "/rds/general/user/zw1222/ephemeral/FSD50K/FSD50K.dev_audio/" + audio_fname + ".wav"
+        if self.cfg.mp3_compression:
+            #modify offline, and include "no change" option
+            #print(f"path is : {audio_fpath}")
+            array = np.array([0,1])
+            bit_1 = np.random.choice(array)
+            array = array[array!=bit_1]
+            bit_2 = np.random.choice(array)
+            #bitrate_1 = f'{bit_1}k' #randomise
+            #bitrate_2 = f'{bit_2}k' #randomise
+            path1 = audio_fpath if bit_1==0 else os.path.join(*[self.base_dir_mp3, self.cfg.mp3_rate, f"{audio_fname}.wav"])
+            path2 = audio_fpath if bit_2==0 else os.path.join(*[self.base_dir_mp3, self.cfg.mp3_rate, f"{audio_fname}.wav"])
+            #wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
+            wav_1, rt = sf.read(path1)
+            wav_1 = np.mean(wav_1, axis=1) if len(wav_1.shape) != 1 else wav_1
+            wav_1 = torch.tensor(wav_1)
+            #wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
+            wav_2, rt = sf.read(path2)
+            wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
+            wav_2 = torch.tensor(wav_2)
+
+            wav_1, wav_2 =  trim_pad_2(wav_1, wav_2, self.unit_length)
+            lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+            lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+            #lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
+            if self.norm_stats is not None:
+                lms_1 = (lms_1- self.norm_stats[0]) / self.norm_stats[1]
+                lms_2 = (lms_2- self.norm_stats[0]) / self.norm_stats[1]
+            #transforms (multitransform is false fo mp3/ldm compression)
+            if self.transform is not None:
+                lms = [self.transform(lms_1), self.transform(lms_2)]
+            else:
+                lms = [lms_1, lms_2]
+            return lms, label_indices
+        """
+        wav, org_sr = librosa.load(audio_path, sr=self.cfg.sample_rate)
+        wav = torch.tensor(wav)  # (length,)
+        # zero padding to both ends
+        length_adj = self.unit_length - len(wav)
+        if length_adj > 0:
+            half_adj = length_adj // 2
+            wav = F.pad(wav, (half_adj, length_adj - half_adj))
+        # random crop unit length wave
+        length_adj = len(wav) - self.unit_length
+        start = random.randint(0, length_adj) if length_adj > 0 else 0
+        wav = wav[start:start + self.unit_length]
+        # to log mel spectogram -> (1, n_mels, time)
+        lms = (self.to_melspecgram(wav) + torch.finfo().eps).log()
+        lms = lms.unsqueeze(0)
+
+        # normalise lms with pre-computed dataset statistics
+        if self.norm_stats is not None:
+            lms = (lms - self.norm_stats[0]) / self.norm_stats[1]
+        # transforms to lms
+        if self.transform is not None:
+            lms = self.transform(lms)
+
+        return lms, label_indices
+        """
 
 class FSD50K(Dataset):
     

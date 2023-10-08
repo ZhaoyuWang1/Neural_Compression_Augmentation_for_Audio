@@ -15,6 +15,7 @@ DATASETS = [
     'fsd50k+librispeech',
     'audioset+librispeech',
     'cifar10',
+    'fsd50k_ablation',
 ]
 
 OPTIMIZERS = [
@@ -22,6 +23,16 @@ OPTIMIZERS = [
     'AdamW', 
     'SGD', 
     'LARS',
+]
+
+MP3_RATE = [
+    '8k',
+    '12k',
+    '16k',
+    '24k',
+    '32k',
+    '48k',
+    '256k',
 ]
 
 def get_hyperparameters():
@@ -101,6 +112,9 @@ def get_std_parameters():
     parser.add_argument('--ldm_compression', action='store_true', default=False)
     parser.add_argument('--mixed_compression', action='store_true', default=False)
     parser.add_argument('--mixed_compression2', action='store_true', default=False)
+    
+    #arguments for ablation study with fsd50k
+    parser.add_argument('--mp3_rate', default='8k', type=str, choices=MP3_RATE)
     
     
     parser.add_argument('--temp_1', default='/rds/general/user/zw1222/ephemeral/temp_1', type=str)

@@ -299,6 +299,12 @@ def get_data(args):
             datasets.AudioSet(args, transform=transforms.AudioPairTransform(args), norm_stats=norm_stats_audioset),
             datasets.LibriSpeech(args, train=True, transform=transforms.AudioPairTransform(args), norm_stats=norm_stats_librispeech, n_dummy=527),
         ])
+    elif args.dataset == 'fsd50k_ablation':
+        # fsd50k [mean, std] (lms)
+        norm_stats = [-4.950, 5.855]
+        len_files = 40966 
+        transform = transforms.AudioPairTransform(args)
+        train_data = datasets.FSD50K_ablation(args, transform=transform, norm_stats=norm_stats)
     
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_data)
@@ -359,7 +365,7 @@ if __name__ == '__main__':
     # wandb init
     timestamp = datetime.datetime.now().strftime('%H:%M_%h%d')
     #save_name = '{}_{}_epochs'.format(args.model_type, args.epochs) if args.name == '' else '{}_{}'.format(args.model_type, args.name)
-    save_name = f"rrc_{args.RRC}_rlf_{args.RLF}_mix_{args.mixup}_noise_{args.Gnoise}_mp3_{args.mp3_compression}_ldm_{args.ldm_compression}_mix_{args.mixed_compression}_mix2_{args.mixed_compression2}"
+    save_name = f"rrc_{args.RRC}_rlf_{args.RLF}_mix_{args.mixup}_noise_{args.Gnoise}_mp3_{args.mp3_compression}_ldm_{args.ldm_compression}_mix_{args.mixed_compression}_mix2_{args.mixed_compression2}_rate_{args.mp3_rate}"
     save_name += timestamp
     if utils.is_main_process():
         wandb_run = wandb.init(
