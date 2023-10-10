@@ -354,6 +354,7 @@ def get_optimizer(args, model, predictor):
 
 
 if __name__ == '__main__':
+    print(torch.seed())
     parser = argparse.ArgumentParser(description='Training args', parents=hyperparameters.get_hyperparameters())
     args = parser.parse_args()
     hyperparameters.setup_hyperparameters(args)
