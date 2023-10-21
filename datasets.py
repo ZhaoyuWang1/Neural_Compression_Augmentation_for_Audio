@@ -39,8 +39,8 @@ class FSD50K_ablation(Dataset):
             df = pd.read_csv('/rds/general/user/zw1222/ephemeral/FSD50K_mp3/FSD50K.ground_truth/dev.csv', header=None)
             self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/FSD50K_mp3/FSD50K.dev_audio'
         elif self.cfg.ldm_compression:
-            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
-            df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
+            self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/FSD50K_ldm/FSD50K.dev_audio"
+            df = pd.read_csv('/rds/general/user/zw1222/ephemeral/FSD50K_mp3/FSD50K.ground_truth/dev.csv', header=None) 
         elif self.cfg.mixed_compression:
             self.base_dir_ldm = "/rds/general/user/zw1222/ephemeral/audioset_aug2"
             df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
@@ -99,6 +99,40 @@ class FSD50K_ablation(Dataset):
             #bitrate_2 = f'{bit_2}k' #randomise
             path1 = audio_fpath if bit_1==0 else os.path.join(*[self.base_dir_mp3, self.cfg.mp3_rate, f"{audio_fname}.wav"])
             path2 = audio_fpath if bit_2==0 else os.path.join(*[self.base_dir_mp3, self.cfg.mp3_rate, f"{audio_fname}.wav"])
+            #wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
+            wav_1, rt = sf.read(path1)
+            wav_1 = np.mean(wav_1, axis=1) if len(wav_1.shape) != 1 else wav_1
+            wav_1 = torch.tensor(wav_1)
+            #wav_2, _ = extract_compressed_wav(audio_fpath, self.temp_2, bitrate=bitrate_2)
+            wav_2, rt = sf.read(path2)
+            wav_2 = np.mean(wav_2, axis=1) if len(wav_2.shape) != 1 else wav_2
+            wav_2 = torch.tensor(wav_2)
+
+            wav_1, wav_2 =  trim_pad_2(wav_1, wav_2, self.unit_length)
+            lms_1 = (self.to_melspecgram(wav_1.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+            lms_2 = (self.to_melspecgram(wav_2.to(torch.float32)) + torch.finfo().eps).log().unsqueeze(0)
+            #lms_1, lms_2 = trim_pad(self.cfg, lms_1), trim_pad(self.cfg, lms_2)
+            if self.norm_stats is not None:
+                lms_1 = (lms_1- self.norm_stats[0]) / self.norm_stats[1]
+                lms_2 = (lms_2- self.norm_stats[0]) / self.norm_stats[1]
+            #transforms (multitransform is false fo mp3/ldm compression)
+            if self.transform is not None:
+                lms = [self.transform(lms_1), self.transform(lms_2)]
+            else:
+                lms = [lms_1, lms_2]
+            return lms, label_indices
+        
+        elif self.cfg.ldm_compression:
+            #modify offline, and include "no change" option
+            #print(f"path is : {audio_fpath}")
+            array = np.array([0,1])
+            bit_1 = np.random.choice(array)
+            array = array[array!=bit_1]
+            bit_2 = np.random.choice(array)
+            #bitrate_1 = f'{bit_1}k' #randomise
+            #bitrate_2 = f'{bit_2}k' #randomise
+            path1 = audio_fpath if bit_1==0 else os.path.join(*[self.base_dir_ldm, self.cfg.ldm_rate, f"{audio_fname}.wav"])
+            path2 = audio_fpath if bit_2==0 else os.path.join(*[self.base_dir_ldm, self.cfg.ldm_rate, f"{audio_fname}.wav"])
             #wav_1, _ = extract_compressed_wav(audio_fpath, self.temp_1, bitrate=bitrate_1)
             wav_1, rt = sf.read(path1)
             wav_1 = np.mean(wav_1, axis=1) if len(wav_1.shape) != 1 else wav_1

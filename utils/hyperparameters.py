@@ -35,6 +35,14 @@ MP3_RATE = [
     '256k',
 ]
 
+LDM_RATE = [
+    4,
+    8,
+    16,
+    32,
+    64,
+]
+
 def get_hyperparameters():
     parser = [get_std_parameters()]
     return parser
@@ -115,6 +123,7 @@ def get_std_parameters():
     
     #arguments for ablation study with fsd50k
     parser.add_argument('--mp3_rate', default='8k', type=str, choices=MP3_RATE)
+    parser.add_argument('--ldm_rate', default=4, type=int, choices=LDM_RATE)
     
     
     parser.add_argument('--temp_1', default='/rds/general/user/zw1222/ephemeral/temp_1', type=str)
