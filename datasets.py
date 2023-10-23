@@ -155,6 +155,24 @@ class FSD50K_ablation(Dataset):
             else:
                 lms = [lms_1, lms_2]
             return lms, label_indices
+        else:
+            wav, rt = sf.read(audio_fpath)
+            wav = np.mean(wav, axis=1) if len(wav.shape) != 1 else wav
+            wav = torch.tensor(wav)
+
+            #pad wave in advance so that it wont cause error when generating specgram
+            wav = trim_pad(wav, self.unit_length)
+
+            #to log mel specgram
+            lms = (self.to_melspecgram(wav.to(torch.float32)) + torch.finfo().eps).log()
+            lms = lms.unsqueeze(0)
+            #lms= trim_pad(self.cfg, lms)
+            if self.norm_stats is not None:
+                lms = (lms - self.norm_stats[0]) / self.norm_stats[1]
+            # transforms
+            if self.transform is not None:
+                lms = self.transform(lms)
+            return lms, label_indices
         """
         wav, org_sr = librosa.load(audio_path, sr=self.cfg.sample_rate)
         wav = torch.tensor(wav)  # (length,)
