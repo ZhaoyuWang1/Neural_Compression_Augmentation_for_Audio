@@ -50,7 +50,7 @@ class FSD50K_ablation(Dataset):
             df = pd.read_csv(os.path.join(self.base_dir_ldm, "lambda_16-downloaded.csv"), header=None) 
             self.base_dir_mp3 = '/rds/general/user/zw1222/ephemeral/audioset_mp3_2'
         else:
-            df = pd.read_csv(os.path.join(self.base_dir, "unbalanced_train_segments-downloaded.csv"), header=None)
+            df = pd.read_csv('/rds/general/user/zw1222/ephemeral/FSD50K_mp3/FSD50K.ground_truth/dev.csv', header=None)
         print(f"base dir is : {self.base_dir}")
 
         self.unit_length = int(cfg.unit_sec * cfg.sample_rate)
